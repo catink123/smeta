@@ -10,7 +10,6 @@
             </option>
           </select>
         </label>
-        <button @click="showAddWindow = true" class="add">Добавить запись</button>
       </div>
 
       <div>
@@ -58,7 +57,13 @@
         <td>{{ totalCost() }} руб.</td>
         <td v-if="!isScreenshotting"></td>
       </tr>
+        <button @click="showAddWindow = true" class="addButton" v-if="!isScreenshotting">＋</button>
     </table>
+    <div class="mainControls">
+      <div>
+        <div class="spacer"></div>
+      </div>
+    </div>
     <transition name="fade">
       <div class="overlay" v-if="showAddWindow">
         <add-window
@@ -123,12 +128,12 @@ export default {
 
     function screenshot() {
       isScreenshotting.value = true;
-        nextTick().then(() => {
-          h2c(document.querySelector("table")).then((canv) => {
-            download(canv.toDataURL(), currentPage.value);
-            isScreenshotting.value = false;
-          });
+      nextTick().then(() => {
+        h2c(document.querySelector("table")).then((canv) => {
+          download(canv.toDataURL(), currentPage.value);
+          isScreenshotting.value = false;
         });
+      });
     }
 
     window.addEventListener("beforeunload", save);
@@ -220,7 +225,13 @@ export default {
     },
 
     deletePage() {
-      if (window.confirm("Вы действительно хотите удалить текущую страницу (" + this.currentPage + ")?")) {
+      if (
+        window.confirm(
+          "Вы действительно хотите удалить текущую страницу (" +
+            this.currentPage +
+            ")?"
+        )
+      ) {
         delete this.data[this.currentPage];
         this.currentPage = Object.keys(this.data)[0];
       }
@@ -253,13 +264,13 @@ export default {
     },
   },
   mounted() {
-    document.addEventListener("keydown", e => {
+    document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         this.showAddWindow = false;
         this.showAddPageWindow = false;
       }
-    })
-  }
+    });
+  },
 };
 </script>
 
@@ -311,7 +322,7 @@ div.controls button:active {
 }
 
 div.controls button.delete:hover {
-  background: rgb(255, 200, 200)
+  background: rgb(255, 200, 200);
 }
 
 div.controls button.delete:active {
@@ -351,12 +362,16 @@ div.mainControls {
   flex-wrap: wrap;
   flex-direction: column;
   align-items: center;
+  width: 100%;
 }
 
 div.mainControls > div {
   display: flex;
   gap: 5px;
   flex-wrap: wrap;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
 }
 
 div.mainControls button {
@@ -376,5 +391,26 @@ div.main {
 
 p {
   margin: 0;
+}
+
+.addButton {
+  width: 30px;
+  height: 30px;
+  font-weight: bold;
+  /* float: right; */
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  transform: translateX(calc(-100% - 5px));
+}
+
+table {
+  position: relative;
+}
+
+.spacer {
+  flex-grow: 1;
+  width: 100%;
+  height: 100%;
 }
 </style>
