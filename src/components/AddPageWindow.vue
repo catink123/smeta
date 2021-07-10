@@ -56,6 +56,16 @@ export default {
         );
       }
     }
+  },
+  mounted() {
+    document.querySelectorAll("form input").forEach(val => {
+      val.addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          this.parse();
+        }
+      });
+    });
   }
 };
 </script>

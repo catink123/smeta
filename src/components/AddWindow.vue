@@ -17,22 +17,22 @@
           <label for="customCost">Нестандартный предмет</label>
         </li>
         <li v-if="!customCost">
-          <label for="area">Площадь (в м<sup>2</sup>): </label>
+          <label for="area">Кол-во + Ед. Измерения: </label>
           <input
             type="text"
-            name="area"
-            placeholder="Например, 2.5"
-            :value="isEditing ? editingData.area : null"
+            name="count"
+            placeholder="Например, 2.5 м2"
+            :value="isEditing ? `${editingData.count} ${editingData.units}`  : null"
             required
           />
         </li>
         <li v-if="!customCost">
-          <label for="costPMSQ">Цена на м<sup>2</sup>: </label>
+          <label for="costPMSQ">Цена на ед. изм.: </label>
           <input
             type="text"
-            name="costPMSQ"
+            name="costPU"
             placeholder="Например, 10"
-            :value="isEditing ? editingData.costPMSQ : null"
+            :value="isEditing ? editingData.costPU : null"
             required
           />
         </li>
@@ -78,15 +78,13 @@ export default {
     if (props.editingData !== null && props.editingData.cost) {
       customCost.value = true;
     }
-    return { customCost };
-  },
-  methods: {
-    parse() {
+
+    function parse() {
       var name = document.getElementsByName("name")[0].value;
-      if (!this.customCost) {
-        var area = parseFloat(document.getElementsByName("area")[0].value);
-        var costPMSQ = parseFloat(
-          document.getElementsByName("costPMSQ")[0].value
+      if (!customCost.value) {
+        var count = document.getElementsByName("count")[0].value;
+        var costPU = parseFloat(
+          document.getElementsByName("costPU")[0].value
         );
       } else {
         var cost = parseFloat(document.getElementsByName("cost")[0].value);
@@ -100,25 +98,26 @@ export default {
         inputsToFill.push("Наименование");
       }
 
-      if (this.customCost) {
+      if (customCost.value) {
         if (isNaN(cost)) {
           proceed = false;
           inputsToFill.push("Цена");
         }
       } else {
-        if (isNaN(area)) {
+        var split = count.split(" ");
+        if (isNaN(parseFloat(split[0]))) {
           proceed = false;
-          inputsToFill.push("Площадь");
+          inputsToFill.push("Кол-во + Ед. Измерения");
         }
-        if (isNaN(costPMSQ)) {
+        if (isNaN(costPU)) {
           proceed = false;
-          inputsToFill.push("Цена на м2");
+          inputsToFill.push("Цена на ед. изм.");
         }
       }
 
       if (proceed) {
         var resultObj;
-        if (this.customCost) {
+        if (customCost.value) {
           resultObj = {
             name,
             cost,
@@ -126,12 +125,13 @@ export default {
         } else {
           resultObj = {
             name,
-            area,
-            costPMSQ,
+            count: parseFloat(split[0]),
+            units: split[1],
+            costPU,
           };
         }
-        if (this.isEditing) this.editCallback(this.editingData.name, resultObj);
-        else this.addCallback(resultObj);
+        if (props.isEditing) props.editCallback(props.editingData.name, resultObj);
+        else props.addCallback(resultObj);
       } else {
         alert(
           `Проверьте написание пол${
@@ -139,8 +139,21 @@ export default {
           } ${inputsToFill.join(", ")}.`
         );
       }
-    },
+    }
+
+    return { customCost, parse };
   },
+
+  mounted() {
+    document.querySelectorAll("form input").forEach(val => {
+      val.addEventListener("keydown", e => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          this.parse();
+        }
+      });
+    });
+  }
 };
 </script>
 

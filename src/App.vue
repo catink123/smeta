@@ -26,22 +26,22 @@
     <table>
       <tr>
         <th>Наименование</th>
-        <th>Площадь</th>
-        <th>Цена на м<sup>2</sup></th>
+        <th>Кол-во</th>
+        <th>Цена на ед. изм.</th>
         <th>Цена</th>
         <th v-if="!isScreenshotting">Управление</th>
       </tr>
       <tr v-for="el in data[currentPage]" :key="el.name">
         <td>{{ el.name }}</td>
 
-        <td v-if="!el.cost">{{ el.area }} м<sup>2</sup></td>
+        <td v-if="!el.cost">{{ el.count }} {{ el.units }}</td>
         <td v-else></td>
 
-        <td v-if="!el.cost">{{ el.costPMSQ }} руб.</td>
+        <td v-if="!el.cost">{{ el.costPU }} руб.</td>
         <td v-else></td>
 
         <td v-if="!el.cost">
-          {{ Math.round(el.area * el.costPMSQ * 1000) / 1000 }} руб.
+          {{ Math.round(el.count * el.costPU * 1000) / 1000 }} руб.
         </td>
         <td v-else>{{ el.cost }} руб.</td>
         <td v-if="!isScreenshotting">
@@ -96,7 +96,6 @@ export default {
   components: { AddWindow, AddPageWindow },
   name: "App",
   data: () => ({
-    // currentPage: "Default",
     showAddWindow: false,
     isEditing: false,
     editingData: null,
@@ -108,7 +107,7 @@ export default {
   setup() {
     var data;
     var isScreenshotting = ref(false);
-    if (localStorage.data !== undefined) {
+    if (localStorage.data !== undefined && localStorage.version == 1) {
       data = JSON.parse(localStorage.data);
     } else {
       data = {
@@ -119,6 +118,7 @@ export default {
 
     function save() {
       localStorage.data = JSON.stringify(data);
+      if (localStorage.version !== 1) localStorage.version = 1;
     }
 
     function screenshot() {
@@ -243,7 +243,7 @@ export default {
       for (const i in this.data[this.currentPage]) {
         var el = this.data[this.currentPage][i];
         if (el.cost) value += el.cost;
-        else value += el.area * el.costPMSQ;
+        else value += el.count * el.costPU;
       }
       return Math.round(value * 1000) / 1000;
     },
@@ -252,6 +252,14 @@ export default {
       return Object.keys(this.data);
     },
   },
+  mounted() {
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") {
+        this.showAddWindow = false;
+        this.showAddPageWindow = false;
+      }
+    })
+  }
 };
 </script>
 
