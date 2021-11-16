@@ -130,7 +130,7 @@ export default {
       isScreenshotting.value = true;
       nextTick().then(() => {
         h2c(document.querySelector("table")).then((canv) => {
-          download(canv.toDataURL(), currentPage.value);
+          download(canv.toDataURL(), currentPage.value, "image/png");
           isScreenshotting.value = false;
         });
       });
